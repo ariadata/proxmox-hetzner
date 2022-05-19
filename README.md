@@ -70,3 +70,5 @@ https://github.com/SOlangsam/hetzner-proxmox-nat
 https://github.com/HoleInTheSeat/ProxmoxStater
 https://github.com/rloyaute/proxmox-iptables-hetzner
 ```
+
+[Useful Helpers](https://tteck.github.io/Proxmox/)
