@@ -75,6 +75,8 @@ https://github.com/rloyaute/proxmox-iptables-hetzner
 
 [firewalld-cmd](https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/)
 
+[webmin on debian 11](https://www.howtoforge.com/how-to-install-webmin-on-debian-11/)
+
 [proxmox-setup on blog](https://mehrdad.ariadata.co/notes/proxmox-setup-network-on-hetzner/)
 
 
