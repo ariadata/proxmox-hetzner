@@ -72,3 +72,9 @@ https://github.com/rloyaute/proxmox-iptables-hetzner
 ```
 
 [Useful Helpers](https://tteck.github.io/Proxmox/)
+
+[firewalld-cmd](https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/)
+
+[proxmox-setup on blog](https://mehrdad.ariadata.co/notes/proxmox-setup-network-on-hetzner/)
+
+
