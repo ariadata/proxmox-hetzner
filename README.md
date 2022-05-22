@@ -56,10 +56,12 @@ reboot
 #### 7- Login to `Web GUI`:
 https://IP_ADDRESS:8006/
 #### 9- Do other configs!:
-> add MASQUERADE and use [iptables-samplefile](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample)
+> add MASQUERADE and NAT rules, by using sample [iptables-samplefile](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample)
+```bash
+iptables -t nat -A PREROUTING -d 1.2.3.4/32 -p tcp -m multiport --dports 80,443,8181 -j DNAT --to-destination 192.168.1.2
+```
 
-> install and configure raid,firewalld,Log-rotate with [webmin on debian 11](https://www.howtoforge.com/how-to-install-webmin-on-debian-11/)
-
+> install `Webmin` and configure raid,firewalld,Log-rotate with [webmin on debian 11](https://www.howtoforge.com/how-to-install-webmin-on-debian-11/)
 
 #### Useful Links :
 ```
