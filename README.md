@@ -56,7 +56,11 @@ reboot
 #### 7- Login to `Web GUI`:
 https://IP_ADDRESS:8006/
 #### 9- Do other configs!:
-....
+> add MASQUERADE and use [iptables-samplefile](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample)
+
+> install and configure raid,firewalld,Log-rotate with [webmin on debian 11](https://www.howtoforge.com/how-to-install-webmin-on-debian-11/)
+
+
 #### Useful Links :
 ```
 https://github.com/extremeshok/xshok-proxmox
@@ -74,8 +78,6 @@ https://github.com/rloyaute/proxmox-iptables-hetzner
 [Useful Helpers](https://tteck.github.io/Proxmox/)
 
 [firewalld-cmd](https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/)
-
-[webmin on debian 11](https://www.howtoforge.com/how-to-install-webmin-on-debian-11/)
 
 [proxmox-setup on blog](https://mehrdad.ariadata.co/notes/proxmox-setup-network-on-hetzner/)
 
