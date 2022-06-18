@@ -147,9 +147,10 @@ reboot
 * after a few minutes , login again to your proxmox server with ssh on port `22`
 
 ### Post Install : 
-* Change ssh port , and relogin with new port agian :
+* Change ssh port , root password, and relogin with new port agian :
 ```shell
 bash <(curl -Ls https://gist.github.com/pcmehrdad/2fbc9651a6cff249f0576b784fdadef0/raw)
+passwd
 ```
 
 * Config hostname,timezone and resolv file :
