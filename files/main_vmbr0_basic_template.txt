@@ -34,3 +34,4 @@ iface vmbr0 inet static
 iface vmbr0 inet6 static
     address #MAIN_IPV6_CIDR#
     gateway fe80::1
+
