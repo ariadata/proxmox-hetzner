@@ -126,6 +126,9 @@ iface vmbr2 inet static
     bridge-ports none
     bridge-stp off
     bridge-fd 0
+
+iface vmbr2 inet6 static
+    address 2a01:4f8:201:3315:2::1/80
 ```
 
 * For `vlan support` append these lines to interface file  :
