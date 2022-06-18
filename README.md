@@ -168,14 +168,14 @@ printf "nameserver 1.1.1.1\nnameserver 2606:4700:4700::1111\n" > /etc/resolv.con
 * edit `/etc/hosts` file like this :
 ```apacheconf
 127.0.0.1 localhost.localdomain localhost
-195.201.194.199 proxmox-example
+148.251.235.75 proxmox-example
 ::1     ip6-localhost ip6-loopback
 fe00::0 ip6-localnet
 ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
-2a01:4f8:13a:1aaf::2 proxmox-example
+2a01:4f8:201:3315::2 proxmox-example
 ```
 
 * run this commands:
@@ -190,7 +190,7 @@ sed -i "s|ftp.*.debian.org|ftp.debian.org|g" /etc/apt/sources.list
 
 apt update && apt -y upgrade && apt -y autoremove
 
-pveupgrade -y
+pveupgrade
 
 sed -Ezi.bak "s/(Ext.Msg.show\(\{\s+title: gettext\('No valid sub)/void\(\{ \/\/\1/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js && systemctl restart pveproxy.service
 
