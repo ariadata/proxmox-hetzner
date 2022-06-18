@@ -6,15 +6,21 @@
 ![](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
 ---
 ### Assume that our servers info is :
-  * Main IP : `148.251.235.75/27`
-  * Gateway : `148.251.235.65`
-  * Public Subnet CIDR: `46.40.125.209/28`
+  * My Interface : `enp7s0`
+  	* `(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)`
+  * Main IP4 and Netmask : `148.251.235.75/27`
+  	* `(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet "| xargs | cut -d" " -f2)`
+  * Main IP4 Gateway : `148.251.235.65`
+  	* `(ip route | grep default | xargs | cut -d" " -f3)`
   * MAC address : `a8:a1:59:55:3b:43`
-  * IPv6 CIDR : `2a01:4f8:201:3315::/64`
-  * main interface name : `enp7s0`
+  	* `(ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')`
+  * IPv6 CIDR : `2a01:4f8:201:3315::2/64`
+  	* `(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet6 "| xargs | cut -d" " -f2)`
+  * Public Subnet CIDR: `46.40.125.209/28`
+  	* Get this from robot
   * Private subnet : `192.168.20.0/24`
   * VLAN ID : `4000`
-  * private CIDR (for can comunicate with hetzner cloud) : `10.0.1.5/24`
+  * private VLAN CIDR (for can comunicate with hetzner cloud) : `10.0.1.5/24`
 ---
 
 #### Prepare the rescue from hetzner robot :
