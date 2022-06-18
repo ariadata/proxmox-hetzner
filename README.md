@@ -1,4 +1,4 @@
-## Install Proxmox on Hetzner Dedicated (iso mode with UEFI)
+## Install Proxmox on Hetzner Dedicated (iso mode with UEFI) with 2 HDDs
 [![Build Status](https://files.ariadata.co/file/ariadata_logo.png)](https://ariadata.co)
 
 ![](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
@@ -42,7 +42,11 @@ wget -O pve.iso http://download.proxmox.com/iso/proxmox-ve_7.2-1.iso
 ```
 * For initial proxmox installer via `VNC` :
 ```shell
+#### If UEFI Supported
 printf "change vnc password\n%s\n" "abcd_123456" | qemu-system-x86_64 -enable-kvm -bios /usr/share/ovmf/OVMF.fd -cpu host -smp 4 -m 4096 -boot d -cdrom ./pve.iso -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -vnc :0,password -monitor stdio -no-reboot
+
+#### If UEFI NOT Supported
+printf "change vnc password\n%s\n" "abcd_123456" | qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4096 -boot d -cdrom ./pve.iso -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -vnc :0,password -monitor stdio -no-reboot
 ```
 * Connect with `VNC client` to `148.251.235.75` with password `abcd_123456`
 
@@ -55,6 +59,10 @@ printf "change vnc password\n%s\n" "abcd_123456" | qemu-system-x86_64 -enable-kv
 
 * Run this command to bring up new installed proxmox in port `5555`
 ```shell
+#### If UEFI Supported
+qemu-system-x86_64 -enable-kvm -bios /usr/share/ovmf/OVMF.fd -cpu host -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -smp 4 -m 4096 -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio
+
+#### If UEFI NOT Supported
 qemu-system-x86_64 -enable-kvm -bios /usr/share/ovmf/OVMF.fd -cpu host -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -smp 4 -m 4096 -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio
 ```
 * Login via SSH or ([WinSCP](https://winscp.net/eng/download.php)) To `148.251.235.75` with port `5555` with password that you entered during install.
