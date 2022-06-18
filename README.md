@@ -64,6 +64,7 @@ qemu-system-x86_64 -enable-kvm -bios /usr/share/ovmf/OVMF.fd -cpu host -device e
 * For `Main IP` replace these lines to contents of file  :
 * for `Main vmbr0` you can use automatic creation with this command :
 ```sh
+## run this in rescue session
 bash <(curl -sSL https://github.com/ariadata/proxmox-hetzner/raw/main/files/update_main_vmbr0_basic_from_template.sh)
 ```
 Or Continue with manual way : 
