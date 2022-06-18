@@ -171,12 +171,6 @@ reboot
 * after a few minutes , login again to your proxmox server with ssh on port `22`
 
 ### Post Install : 
-* Change ssh port , root password, and relogin with new port agian :
-```shell
-bash <(curl -Ls https://gist.github.com/pcmehrdad/2fbc9651a6cff249f0576b784fdadef0/raw)
-passwd
-```
-
 * Config hostname,timezone and resolv file :
 ```shell
 hostnamectl set-hostname proxmox-example
@@ -231,9 +225,11 @@ echo "options zfs zfs_arc_max=$[12 * 1024*1024*1024]" >> /etc/modprobe.d/99-zfs.
 update-initramfs -u
 ```
 
-* Update and `reboot` your system!
+* Update system , ssh port and root password , then `reboot` your system!
 ```shell
 apt update && apt -y upgrade && apt -y autoremove
+bash <(curl -Ls https://gist.github.com/pcmehrdad/2fbc9651a6cff249f0576b784fdadef0/raw)
+passwd
 reboot
 ```
 #### Login to `Web GUI`:
