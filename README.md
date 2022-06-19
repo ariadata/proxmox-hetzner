@@ -225,11 +225,12 @@ echo "options zfs zfs_arc_max=$[12 * 1024*1024*1024]" >> /etc/modprobe.d/99-zfs.
 update-initramfs -u
 ```
 
-* Update system , ssh port and root password , then `reboot` your system!
+* Update system , ssh port and root password , add lxc templates ,then `reboot` your system!
 ```shell
 apt update && apt -y upgrade && apt -y autoremove
 bash <(curl -Ls https://gist.github.com/pcmehrdad/2fbc9651a6cff249f0576b784fdadef0/raw)
 passwd
+pveam update
 reboot
 ```
 #### Login to `Web GUI`:
