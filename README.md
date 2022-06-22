@@ -236,7 +236,9 @@ reboot
 #### Login to `Web GUI`:
 https://IP_ADDRESS:8006/
 #### Do other configs!:
-> add MASQUERADE and NAT rules, by using sample [iptables-samplefile](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample)
+> add MASQUERADE and NAT rules, by using samples [example](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample) | 
+[rules.v4](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v4) |
+[rules.v6](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v6)
 ```bash
 iptables -t nat -A PREROUTING -d 1234/32 -p tcp --dport 10001 -j DNAT --to 192.168.20.100:22
 iptables -t nat -A PREROUTING -d 1.2.3.4/32 -p tcp -m multiport --dports 80,443,8181 -j DNAT --to-destination 192.168.1.2
