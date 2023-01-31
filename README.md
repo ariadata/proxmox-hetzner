@@ -1,5 +1,5 @@
 ## Install Proxmox on Hetzner Dedicated (iso mode with UEFI) with 2 HDDs
-[![Build Status](https://files.ariadata.co/file/ariadata_logo.png)](https://ariadata.co)
+<img src="https://raw.githubusercontent.com/ariadata/proxmox-templates-helpers/main/static/icons/LXC.png" alt="Debian LXC" height="48" /> <img src="https://raw.githubusercontent.com/ariadata/proxmox-templates-helpers/main/static/icons/smb-debian.png" alt="SMB on Debian" height="48" />
 
 ![](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
 ![](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
