@@ -1,29 +1,55 @@
-## Install Proxmox on Hetzner Dedicated (iso mode with UEFI) with 2 HDDs
-<img src="https://raw.githubusercontent.com/ariadata/proxmox-templates-helpers/main/static/icons/LXC.png" alt="Debian LXC" height="48" /> <img src="https://raw.githubusercontent.com/ariadata/proxmox-templates-helpers/main/static/icons/smb-debian.png" alt="SMB on Debian" height="48" />
+## Install Proxmox on Hetzner Dedicated Server
+- iso mode with UEFI
+- 2 x NVMe SSD Drives
+- Tested on [AX101](https://www.hetzner.com/dedicated-rootserver/ax101)
+
+<img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
 
 ![](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
 ![](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
 ![](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
 ---
 ### Assume that our servers info is :
-  * My Interface : `enp7s0`
-  	* `(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)`
-  * Main IP4 and Netmask : `148.251.235.75/27`
-  	* `(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet "| xargs | cut -d" " -f2)`
-  * Main IP4 Gateway : `148.251.235.65`
-  	* `(ip route | grep default | xargs | cut -d" " -f3)`
-  * MAC address : `a8:a1:59:55:3b:43`
-  	* `(ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')`
-  * IPv6 CIDR : `2a01:4f8:201:3315::2/64`
-  	* `(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet6 "| xargs | cut -d" " -f2)`
-  * Public Subnet CIDR: `46.40.125.209/28`
-  	* Get this from robot
-  * Private subnet : `192.168.20.0/24`
-  * VLAN ID : `4000`
-  * private VLAN CIDR (for can comunicate with hetzner cloud) : `10.0.1.5/24`
+* My Interface name : `enp7s0`
+```shell
+# run this command to get your interface name
+(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)
+```
+
+* Main IP4 and Netmask : `148.251.235.75/27`
+```shell
+# run this command to get your main IP4 and Netmask
+(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet "| xargs | cut -d" " -f2)
+```
+
+* Main IP4 Gateway : `148.251.235.65`
+```shell
+# run this command to get your main IP4 Gateway
+(ip route | grep default | xargs | cut -d" " -f3)
+```
+
+* MAC address : `a8:a1:59:55:3b:43`
+```shell
+# run this command to get your MAC address
+(ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+```
+
+* IPv6 CIDR : `2a01:4f8:201:3315::2/64`
+```shell
+# run this command to get your IPv6 CIDR
+(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet6 "| xargs | cut -d" " -f2)
+```
+
+* Public Subnet CIDR: `46.40.125.209/28`
+```shell
+# Get this from robot (hetzner)
+```
+
+* My private subnet : `192.168.20.0/24` with gateway `192.168.20.1` (choose your own subnet)
+
 ---
 
-#### Prepare the rescue from hetzner robot :
+### Prepare the rescue from hetzner robot manager
 * Select the Rescue tab for the specific server, via the hetzner robot manager
 * * Operating system=Linux
 * * Architecture=64 bit
@@ -38,7 +64,7 @@
 #### Install requirements and Install Proxmox:
 ```shell
 apt -y install ovmf wget 
-wget -O pve.iso http://download.proxmox.com/iso/proxmox-ve_7.2-1.iso
+wget -O pve.iso http://download.proxmox.com/iso/proxmox-ve_7.3-1.iso
 ```
 * For initial proxmox installer via `VNC` :
 ```shell
@@ -234,9 +260,10 @@ pveam update
 reboot
 ```
 #### Login to `Web GUI`:
-https://IP_ADDRESS:8006/
-#### Do other configs!:
-> add MASQUERADE and NAT rules, by using samples [example](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample) | 
+**https://IP_ADDRESS:8006/**
+
+#### Do other configs like this : 
+> MASQUERADE and NAT rules, by using samples [example](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample) | 
 [rules.v4](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v4) |
 [rules.v6](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v6)
 ```bash
@@ -244,46 +271,7 @@ iptables -t nat -A PREROUTING -d 1234/32 -p tcp --dport 10001 -j DNAT --to 192.1
 iptables -t nat -A PREROUTING -d 1.2.3.4/32 -p tcp -m multiport --dports 80,443,8181 -j DNAT --to-destination 192.168.1.2
 ```
 
-> install `Webmin` and configure raid,firewalld,Log-rotate with [webmin on debian 11](https://www.howtoforge.com/how-to-install-webmin-on-debian-11/)
-
-### Install [Mikrotik](https://mikrotik.com)
-```
-Mikrotik Installation :
-
-## Create a VM as these settintgs via gui :
-# VM ID : 100
-# Name : mikrotik-18.2
-# in OS Tab : Do not use any media
-# Guest OS Type: Other
-# in Disks Tab remove all disks
-# Network Model : Intel E1000
-# after cteated use command :
-cd /var/lib/vz/images/
-wget https://mehrdad.ariadata.co/notes/wp-content/uploads/2022/02/mikrotik6-routeros-kvm-disk.zip
-# wget https://files.ariadata.co/file/mikrotik6-routeros-kvm-disk.zip
-
-unzip mikrotik6-routeros-kvm-disk.zip && rm -f mikrotik6-routeros-kvm-disk.zip
-qm importdisk 100 mikrotik-routeros-kvm-disk.qcow2 local
-# Goto hardware tab using gui
-# Double Click on "Unused Disk 0" , Choose Bus/Device : IDE , Add!
-# Goto Options tab using gui : 
-# Enable "Start at boot"
-# In Boot Order : choose only ide0 and drag it to first
-# Goto Console tab and Start the VM
-# Login in console via user admin and empty password
-# Change router password (for numbers enter 0 ):
-user set password=MyPassword
-# interface ethernet reset-mac-address ether2
-ip address add address=192.168.18.2 netmask=255.255.255.0 interface=ether2
-ip route add gateway=192.168.18.1
-# ip dns set servers=1.1.1.1
-
-# Login with WinBox to server : https://mt.lv/winbox
-142.132.195.122:8999
-admin
-MyPassword
-```
-#### Useful Links :
+#### Some useful links :
 ```
 https://github.com/extremeshok/xshok-proxmox
 https://github.com/extremeshok/xshok-proxmox/tree/master/hetzner
