@@ -159,7 +159,7 @@ iface vmbr1 inet6 static
 	address 2a01:4f8:201:3315:1::1/80
 ```
 
-* For `public subnet` append these lines to interface file  :
+* For `public subnet` append these lines to interface file (first-IP/subnet) :
 ```apacheconf
 auto vmbr2
 iface vmbr2 inet static
