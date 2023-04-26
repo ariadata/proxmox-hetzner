@@ -1,7 +1,5 @@
-## Install Proxmox on Hetzner Dedicated Server
-- iso mode with UEFI
-- 2 x NVMe SSD Drives
-- Tested on [AX101](https://www.hetzner.com/dedicated-rootserver/ax101)
+## Install Proxmox on hetzner dedicated servers without console
+>Tested on Series [AX](https://www.hetzner.com/dedicated-rootserver/matrix-ax) , [EX](https://www.hetzner.com/dedicated-rootserver/matrix-ex) , [SX](https://www.hetzner.com/dedicated-rootserver/matrix-sx)
 
 <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
 
@@ -9,47 +7,18 @@
 ![](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
 ![](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
 ---
-### Assume that our servers info is :
-* My Interface name : `enp7s0`
-```shell
-# run this command to get your interface name
-(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)
-```
+## Steps :
+* [Prepare and Boot into rescue mode](#prepare-and-boot-into-rescue-mode)
+* [Check the server is booted in UEFI mode](#check-the-server-supports-uefi)
+* [Use config generator to get basic configs](#use-config-generator-to-make-basic-configurations)
+* [Install requirenments and download pve iso](#install-requirenments-and-download-proxmox-latest-iso)
+* [Start installing proxmox via VNC created by qemu-system](#start-installing-proxmox-with-vnc)
+* [Run proxmox temporary on port 5555 for basic configs](#run-proxmox-temporary-on-port-5555-for-basic-configs)
+* [Do some post install scripts/commands](#run-some-post-install-scriptscommands)
+* [Your server is ready!](#your-server-is-ready-to-use)
+* [Useful links](#useful-links)
 
-* Main IP4 and Netmask : `148.251.235.75/27`
-```shell
-# run this command to get your main IP4 and Netmask
-(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet "| xargs | cut -d" " -f2)
-```
-
-* Main IP4 Gateway : `148.251.235.65`
-```shell
-# run this command to get your main IP4 Gateway
-(ip route | grep default | xargs | cut -d" " -f3)
-```
-
-* MAC address : `a8:a1:59:55:3b:43`
-```shell
-# run this command to get your MAC address
-(ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
-```
-
-* IPv6 CIDR : `2a01:4f8:201:3315::2/64`
-```shell
-# run this command to get your IPv6 CIDR
-(ip address show "$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)" | grep global | grep "inet6 "| xargs | cut -d" " -f2)
-```
-
-* Public Subnet CIDR: `46.40.125.209/28`
-```shell
-# Get this from robot (hetzner)
-```
-
-* My private subnet : `192.168.20.0/24` with gateway `192.168.20.1` (choose your own subnet)
-
----
-
-### Prepare the rescue from hetzner robot manager
+## Prepare and Boot into rescue mode
 * Select the Rescue tab for the specific server, via the hetzner robot manager
 * * Operating system=Linux
 * * Architecture=64 bit
@@ -61,163 +30,87 @@
 * Wait a few mins
 * Connect via ssh/terminal to the rescue system running on your server
 
-#### Install requirements and Install Proxmox:
-```shell
-apt -y install ovmf wget 
-wget -O pve.iso http://download.proxmox.com/iso/proxmox-ve_7.3-1.iso
+
+## Check the server supports UEFI
+* Run the following command to check if the server supports UEFI
+```bash
+# In rescue bash :
+efibootmgr
+# If the output of the command contains the word "UEFI", then the server is booted in UEFI mode.
 ```
+
+## Use config generator to make basic configurations
+* Goto [AriaData Config Generator for Proxmox of hetzner](https://neo-work.ariadata.co/tools/proxmox-hetzner-config-generator) 
+* Fill the form then download (and extract) config files `(be careful to put the corrects values)`
+
+## Install requirenments and download proxmox latest iso
+* Run the following commands to install requirenments and download proxmox iso
+```bash
+# In rescue bash :
+apt -y install ovmf wget 
+wget -O pve.iso http://download.proxmox.com/iso/proxmox-ve_7.4-1.iso
+# you can check the latest one on http://download.proxmox.com/iso/
+```
+
+## Start installing proxmox with VNC
 * For initial proxmox installer via `VNC` :
-```shell
+```bash
+# In rescue bash :
+
 #### If UEFI Supported
 printf "change vnc password\n%s\n" "abcd_123456" | qemu-system-x86_64 -enable-kvm -bios /usr/share/ovmf/OVMF.fd -cpu host -smp 4 -m 4096 -boot d -cdrom ./pve.iso -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -vnc :0,password -monitor stdio -no-reboot
 
 #### If UEFI NOT Supported
 printf "change vnc password\n%s\n" "abcd_123456" | qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4096 -boot d -cdrom ./pve.iso -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -vnc :0,password -monitor stdio -no-reboot
 ```
-* Connect with `VNC client` to `148.251.235.75` with password `abcd_123456`
+> Note: you can change the vnc password by changing the `abcd_123456` to your own password
+* Connect with any [VNC client](https://www.google.com/search?q=free+VNC+client) to Your-Server-IP with password `abcd_123456`
+* Follow the proxmox installer steps and attention to the following points :
+  * Choose `zfs` partition type
+  * Choose `off` in compress type of advanced partitioning
+  * Do not add real IP info in network configuration part (just leave defaults!)
+  * Do not touch any checkmarks in the last step
+  * Close VNC window after system rebooted and waits for reconnect
 
-* Install Proxmox and attention to these :
-  * choose `zfs` partition type
-  * choose `lz4` in compress type of advanced partitioning
-  * do not add real IP info in network configuration part (just leave defaults!)
-  * close VNC window after system rebooted and waits for reconnect
 
+## Run proxmox temporary on port `5555` for basic configs
+```bash
+# In rescue bash :
 
-* Run this command to bring up new installed proxmox in port `5555`
-```shell
 #### If UEFI Supported
 qemu-system-x86_64 -enable-kvm -bios /usr/share/ovmf/OVMF.fd -cpu host -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -smp 4 -m 4096 -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio
 
 #### If UEFI NOT Supported
 qemu-system-x86_64 -enable-kvm -cpu host -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22 -smp 4 -m 4096 -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio
 ```
-* Login via SSH or ([WinSCP](https://winscp.net/eng/download.php)) To `148.251.235.75` with port `5555` with password that you entered during install.
-
-#### Edit `/etc/network/interfaces` file due to your requirements : 
-* Use this template for basic interface. (**change parameters manually**)
-* For `Main IP` replace these lines to contents of file  :
-* for `Main vmbr0` you can use automatic creation with this command :
-```sh
-## run this in rescue session
-bash <(curl -sSL https://github.com/ariadata/proxmox-hetzner/raw/main/files/update_main_vmbr0_basic_from_template.sh)
-```
-Or Continue with manual way : 
-
-```apacheconf
-# network interface settings; autogenerated
-# Please do NOT modify this file directly, unless you know what
-# you're doing.
-#
-# If you want to manage parts of the network configuration manually,
-# please utilize the 'source' or 'source-directory' directives to do
-# so.
-# PVE will preserve these directives, but will NOT read its network
-# configuration from sourced files, so do not attempt to move any of
-# the PVE managed interfaces into external files!
-
-source /etc/network/interfaces.d/*
-
-auto lo
-iface lo inet loopback
-
-iface lo inet6 loopback
-
-iface enp7s0 inet manual
-
-auto vmbr0
-iface vmbr0 inet static
-    address 148.251.235.75/27
-    gateway 148.251.235.65
-    bridge-ports enp7s0
-    bridge-stp off
-    bridge-fd 1
-    bridge-vlan-aware yes
-    bridge-vids 2-4094
-    hwaddress a8:a1:59:55:3b:43
-    pointopoint 148.251.235.65
-    up sysctl -p
-
-iface vmbr0 inet6 static
-    address 2a01:4f8:201:3315::2/64
-    gateway fe80::1
-```
-
-* For `private subnet` append these lines to interface file  :
-```apacheconf
-auto vmbr1
-iface vmbr1 inet static
-    address 192.168.20.1/24
-    bridge-ports none
-    bridge-stp off
-    bridge-fd 0
-    post-up   iptables -t nat -A POSTROUTING -s '192.168.20.0/24' -o vmbr0 -j MASQUERADE
-    post-down iptables -t nat -D POSTROUTING -s '192.168.20.0/24' -o vmbr0 -j MASQUERADE
-    post-up   iptables -t raw -I PREROUTING -i fwbr+ -j CT --zone 1
-    post-down iptables -t raw -D PREROUTING -i fwbr+ -j CT --zone 1
-
-iface vmbr1 inet6 static
-	address 2a01:4f8:201:3315:1::1/80
-```
-
-* For `public subnet` append these lines to interface file (first-Usable-IP/subnet) :
-```apacheconf
-auto vmbr2
-iface vmbr2 inet static
-    address 46.40.125.209/28
-    bridge-ports none
-    bridge-stp off
-    bridge-fd 0
-
-iface vmbr2 inet6 static
-    address 2a01:4f8:201:3315:2::1/80
-```
-
-* For `vlan support` append these lines to interface file  :
-  * You have to create a vswitch with ID `4000` in your robot panel of hetzner. 
-```apacheconf
-auto vlan4000
-iface vlan4000 inet static
-    address 10.0.1.5/24
-    mtu 1400
-    vlan-raw-device vmbr0
-    up ip route add 10.0.0.0/16 via 10.0.1.1 dev vlan4000
-    down ip route del 10.0.0.0/16 via 10.0.1.1 dev vlan4000
-```
-
-* Poweroff `ssh with port 5555`: 
-```shell
+* Login via `ssh-client` **And** `SFTP-Client` To Your-Server-IP with port `5555` with password that you entered during install promxox.
+* Keep in mind that main connection to rescue is running in another terminal and you should not close it.
+* Copy the downloaded config files (`etc` folder) to `/root` directory of the server via SFTP-Client
+* Now run these commands in **ssh-client terminal** :
+```bash
+# In ssh-terminal with port 5555 :
+cp -r /root/etc/* /etc/ && rm -rf /root/etc
 poweroff
 ```
-
-* Reboot main `rescue` ssh :
-```shell
+* Close the ssh-client terminal + sftp-client app (on port 5555) and run the following command in **rescue bash** :
+```bash
+# In rescue bash :
 reboot
 ```
+* Close the rescue bash terminal and wait a few minutes
+* Then connect via ssh-client to Your-Server-IP with port `22` with password that you entered during install promxox.
 
-* after a few minutes , login again to your proxmox server with ssh on port `22`
-
-### Post Install : 
+## Run some post install scripts/commands
 * Config hostname,timezone and resolv file :
 ```shell
-hostnamectl set-hostname proxmox-example
-timedatectl set-timezone Europe/Istanbul
-printf "nameserver 1.1.1.1\nnameserver 2606:4700:4700::1111\n" > /etc/resolv.conf
-```
-* edit `/etc/hosts` file like this :
-```apacheconf
-127.0.0.1 localhost.localdomain localhost
-148.251.235.75 proxmox-example
-::1     ip6-localhost ip6-loopback
-fe00::0 ip6-localnet
-ff00::0 ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-ff02::3 ip6-allhosts
-2a01:4f8:201:3315::2 proxmox-example
-```
+# In pve bash :
 
-* run this commands:
-```shell
+# Change Timezone
+timedatectl set-timezone Europe/Istanbul
+
+# Change DNS servers
+printf "nameserver 1.1.1.1\nnameserver 2606:4700:4700::1111\n" > /etc/resolv.conf
+
 systemctl disable --now rpcbind rpcbind.socket
 
 sed -i 's/^\([^#].*\)/# \1/g' /etc/apt/sources.list.d/pve-enterprise.list
@@ -230,22 +123,22 @@ apt update && apt -y upgrade && apt -y autoremove
 
 pveupgrade
 
+pveam update
+
+apt install -y curl libguestfs-tools unzip iptables-persistent net-tools
+
 sed -Ezi.bak "s/(Ext.Msg.show\(\{\s+title: gettext\('No valid sub)/void\(\{ \/\/\1/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js && systemctl restart pveproxy.service
-
-apt install -y libguestfs-tools unzip iptables-persistent
-
-# apt install net-tools
 
 echo "nf_conntrack" >> /etc/modules
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/99-proxmox.conf
 echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/99-proxmox.conf
 echo "net.netfilter.nf_conntrack_max=1048576" >> /etc/sysctl.d/99-proxmox.conf
 echo "net.netfilter.nf_conntrack_tcp_timeout_established=28800" >> /etc/sysctl.d/99-proxmox.conf
-
 ```
 
 * Limit ZFS Memory Usage According to [This Link](https://pve.proxmox.com/wiki/ZFS_on_Linux#sysadmin_zfs_limit_memory_usage) :
-```shell
+```bash
+# In pve bash :
 echo "options zfs zfs_arc_min=$[6 * 1024*1024*1024]" >> /etc/modprobe.d/99-zfs.conf
 echo "options zfs zfs_arc_max=$[12 * 1024*1024*1024]" >> /etc/modprobe.d/99-zfs.conf
 update-initramfs -u
@@ -253,26 +146,28 @@ update-initramfs -u
 
 * Update system , ssh port and root password , add lxc templates ,then `reboot` your system!
 ```shell
-apt update && apt -y upgrade && apt -y autoremove
 bash <(curl -Ls https://gist.github.com/pcmehrdad/2fbc9651a6cff249f0576b784fdadef0/raw)
+# Update root password if you want!
 passwd
-pveam update
+
+# Reboot The System
 reboot
 ```
-#### Login to `Web GUI`:
-**https://IP_ADDRESS:8006/**
 
-#### Do other configs like this : 
-> MASQUERADE and NAT rules, by using samples [example](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample) | 
-[rules.v4](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v4) |
-[rules.v6](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v6)
-```bash
-iptables -t nat -A PREROUTING -d 1234/32 -p tcp --dport 10001 -j DNAT --to 192.168.20.100:22
-iptables -t nat -A PREROUTING -d 1.2.3.4/32 -p tcp -m multiport --dports 80,443,8181 -j DNAT --to-destination 192.168.1.2
-```
+## Your server is ready to use
+* Login to `Web GUI` on port `8006` with `root` user and password that you entered during install promxox.
+    > https://Your-Server-IP:8006
 
-#### Some useful links :
+* Your could use `notes.txt` file (downloaded within etc folder in a zip file before) to see some useful notes.
+
+
+
+## Useful links
+[ReadMe-v1.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README-v1.md)
+
+Other Useful Links :
 ```
+https://tteck.github.io/Proxmox/
 https://github.com/extremeshok/xshok-proxmox
 https://github.com/extremeshok/xshok-proxmox/tree/master/hetzner
 https://88plug.com/linux/what-to-do-after-you-install-proxmox/
@@ -283,10 +178,5 @@ https://github.com/west17m/hetzner-proxmox
 https://github.com/SOlangsam/hetzner-proxmox-nat
 https://github.com/HoleInTheSeat/ProxmoxStater
 https://github.com/rloyaute/proxmox-iptables-hetzner
+https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/
 ```
-
-[Useful Helpers](https://tteck.github.io/Proxmox/)
-
-[firewalld-cmd](https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/)
-
-[proxmox-setup on blog](https://mehrdad.ariadata.co/notes/proxmox-setup-network-on-hetzner/)
