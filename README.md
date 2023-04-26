@@ -108,9 +108,6 @@ reboot
 # Change Timezone
 timedatectl set-timezone Europe/Istanbul
 
-# Change DNS servers
-printf "nameserver 1.1.1.1\nnameserver 2606:4700:4700::1111\n" > /etc/resolv.conf
-
 systemctl disable --now rpcbind rpcbind.socket
 
 sed -i 's/^\([^#].*\)/# \1/g' /etc/apt/sources.list.d/pve-enterprise.list
