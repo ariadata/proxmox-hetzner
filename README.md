@@ -176,4 +176,5 @@ https://github.com/SOlangsam/hetzner-proxmox-nat
 https://github.com/HoleInTheSeat/ProxmoxStater
 https://github.com/rloyaute/proxmox-iptables-hetzner
 https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/
+https://www.virtualizationhowto.com/2022/10/proxmox-firewall-rules-configuration/
 ```
