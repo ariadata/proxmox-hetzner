@@ -89,7 +89,7 @@ qemu-system-x86_64 -enable-kvm -cpu host -device e1000,netdev=net0 -netdev user,
 * Now run these commands in **ssh-client terminal** :
 ```bash
 # In ssh-terminal with port 5555 :
-cp -r /root/etc/* /etc/ && rm -rf /root/etc
+cp -rf /root/etc/* /etc/ && rm -rf /root/etc
 poweroff
 ```
 * Close the ssh-client terminal + sftp-client app (on port 5555) and run the following command in **rescue bash** :
@@ -157,7 +157,7 @@ reboot
 
 
 ## Useful links
-[ReadMe-v1.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README-v1.md)
+[ReadMe-v1.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README.md)
 
 Other Useful Links :
 ```
