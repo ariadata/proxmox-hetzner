@@ -1,7 +1,6 @@
-## Install Proxmox on Hetzner Dedicated Server
+## Install Proxmox 7.4 on Hetzner Dedicated Server
 - iso mode with UEFI
 - 2 x NVMe SSD Drives
-- Tested on [AX101](https://www.hetzner.com/dedicated-rootserver/ax101)
 
 <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
 
