@@ -244,7 +244,7 @@ make_template_files() {
 configure_proxmox_via_ssh() {
     echo -e "${CLR_BLUE}Starting post-installation configuration via SSH...${CLR_RESET}"
     make_template_files
-	ssh-keygen -f "/root/.ssh/known_hosts" -R "[localhost]:5555"
+	ssh-keygen -f "/root/.ssh/known_hosts" -R "[localhost]:5555" || true
     # copy template files to the server using scp
     sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/hosts root@localhost:/etc/hosts
     sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/interfaces root@localhost:/etc/network/interfaces
