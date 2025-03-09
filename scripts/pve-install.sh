@@ -102,13 +102,8 @@ download_proxmox_iso() {
         echo -e "${CLR_RED}Failed to retrieve Proxmox ISO URL! Exiting.${CLR_RESET}"
         exit 1
     fi
-    # check if the file is already downloaded
-    if [[ -f "pve.iso" ]]; then
-        echo -e "${CLR_GREEN}Proxmox ISO already downloaded.${CLR_RESET}"
-    else
-        wget -O pve.iso "$PROXMOX_ISO_URL"
-        echo -e "${CLR_GREEN}Proxmox ISO downloaded.${CLR_RESET}"
-    fi
+    wget -O pve.iso "$PROXMOX_ISO_URL"
+    echo -e "${CLR_GREEN}Proxmox ISO downloaded.${CLR_RESET}"
 }
 
 make_answer_toml() {
@@ -133,11 +128,6 @@ make_answer_toml() {
 
 EOF
     echo -e "${CLR_GREEN}answer.toml created.${CLR_RESET}"
-
-    # Validatin answer file like: proxmox-auto-install-assistant validate-answer answer.yaml
-    echo -e "${CLR_BLUE}Validating answer.toml...${CLR_RESET}"
-    proxmox-auto-install-assistant validate-answer answer.toml
-    echo -e "${CLR_GREEN}answer.toml validated.${CLR_RESET}"
 }
 
 make_autoinstall_iso() {
