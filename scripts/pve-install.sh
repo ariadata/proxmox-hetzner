@@ -49,7 +49,7 @@ get_user_input() {
     read -e -p "Enter your timezone : " -i "Europe/Istanbul" TIMEZONE
     read -e -p "Enter your email address: " -i "admin@example.com" EMAIL
     read -e -p "Enter your private subnet : " -i "192.168.26.0/24" PRIVATE_SUBNET
-    read -rsp "Enter your System New root password: " NEW_ROOT_PASSWORD
+    read -e -p "Enter your System New root password: " NEW_ROOT_PASSWORD
     
     # Get the network prefix (first three octets) from PRIVATE_SUBNET
     PRIVATE_CIDR=$(echo "$PRIVATE_SUBNET" | cut -d'/' -f1 | rev | cut -d'.' -f2- | rev)
@@ -64,7 +64,7 @@ get_user_input() {
     while [[ -z "$NEW_ROOT_PASSWORD" ]]; do
         # Print message in a new line
         echo ""
-        read -rsp "Enter your System New root password: " NEW_ROOT_PASSWORD
+        read -e -p "Enter your System New root password: " NEW_ROOT_PASSWORD
     done
 
     echo ""
