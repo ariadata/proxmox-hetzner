@@ -14,7 +14,7 @@
 * [Your server is ready!](#your-server-is-ready-to-use)
 * [Useful links](#useful-links)
 
-
+#### ❗️❗️ This script tested on AX-102 servers, and raids disks in Raid-1 (zfs) format 
 
 ### 1- Prepare the rescue from hetzner robot manager
 * Select the Rescue tab for the specific server, via the hetzner robot manager
