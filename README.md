@@ -15,14 +15,28 @@
 * [Useful links](#useful-links)
 
 
-## Start installation:
+
+### 1- Prepare the rescue from hetzner robot manager
+* Select the Rescue tab for the specific server, via the hetzner robot manager
+* * Operating system=Linux
+* * Architecture=64 bit
+* * Public key=*optional*
+* --> Activate rescue system
+* Select the Reset tab for the specific server,
+* Check: Execute an automatic hardware reset
+* --> Send
+* Wait a few mins
+* Connect via ssh/terminal to the rescue system running on your server
+
+
+## 2- Start installation:
 Just run this command in rescue bash:
 ```bash
 bash <(curl -sSL https://github.com/ariadata/proxmox-hetzner/raw/main/scripts/pve-install.sh)
 ```
 
 
-## Run some optional post install commands
+## 3- Run some optional post install commands
 * Just run this command in rescue bash! (optional)
 ```shell
 # In pve bash :
@@ -46,7 +60,7 @@ echo "options zfs zfs_arc_max=$[12 * 1024*1024*1024]" >> /etc/modprobe.d/99-zfs.
 update-initramfs -u
 ```
 
-## Your server is ready to use
+## 4- Your server is ready to use
 * Login to `Web GUI` on port `8006` with `root` user and password that you entered during install promxox.
     > https://Your-Server-IP:8006
 
