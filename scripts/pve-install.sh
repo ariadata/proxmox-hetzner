@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 set -e
-cd "$(dirname "$0")"
+cd /root
 
 # Define colors for output
 CLR_RED="\033[1;31m"
