@@ -1,56 +1,90 @@
-## Install Proxmox on hetzner dedicated servers without console
->Tested on Series [AX](https://www.hetzner.com/dedicated-rootserver/matrix-ax) , [EX](https://www.hetzner.com/dedicated-rootserver/matrix-ex) , [SX](https://www.hetzner.com/dedicated-rootserver/matrix-sx)
+# Proxmox on Hetzner Without Console Access
 
-<img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
+<div align="center">
+  <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="64" /> 
+  <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="50" />
+  <h3>Automated Installation for Hetzner Dedicated Servers</h3>
+  
+  ![GitHub Stars](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
+  ![GitHub Watchers](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
+  ![GitHub Forks](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
+</div>
 
-![](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
-![](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
-![](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
----
-## Steps :
-* [Prepare and Boot into rescue mode](#prepare-and-boot-into-rescue-mode)
-* [Start installing with auto-installer](#start-installing)
-* [Do some post install scripts/commands](#run-some-post-install-scriptscommands)
-* [Your server is ready!](#your-server-is-ready-to-use)
-* [Useful links](#useful-links)
+## 📑 Overview
 
-#### ❗️❗️ This script tested on AX-102 servers, and raids disks in Raid-1 (zfs) format 
+This project provides an automated solution for installing Proxmox VE on Hetzner dedicated servers **without requiring console access**. It streamlines the installation process using a custom script that handles all the complex configuration steps automatically.
 
-### 1- Prepare the rescue from hetzner robot manager
-* Select the Rescue tab for the specific server, via the hetzner robot manager
-* * Operating system=Linux
-* * Architecture=64 bit
-* * Public key=*optional*
-* --> Activate rescue system
-* Select the Reset tab for the specific server,
-* Check: Execute an automatic hardware reset
-* --> Send
-* Wait a few mins
-* Connect via ssh/terminal to the rescue system running on your server
+**Compatible Hetzner Server Series:**
+- [AX Series](https://www.hetzner.com/dedicated-rootserver/matrix-ax)
+- [EX Series](https://www.hetzner.com/dedicated-rootserver/matrix-ex)
+- [SX Series](https://www.hetzner.com/dedicated-rootserver/matrix-sx)
 
+> ⚠️ **Note:** This script has been primarily tested on AX-102 servers and configures disks in RAID-1 (ZFS) format.
 
-## 2- Start installation:
-Just run this command in rescue bash:
+<div align="center">
+  <br>
+  <h3>❤️ Love This Tool? ❤️</h3>
+  <p>If this project has saved you time and effort, please consider starring it!</p>
+  <p>
+    <a href="https://github.com/ariadata/proxmox-hetzner" target="_blank">
+      <img src="https://img.shields.io/github/stars/ariadata/proxmox-hetzner?style=social" alt="Star on GitHub">
+    </a>
+  </p>
+  <p><b>Every star motivates me to create more awesome tools for the community!</b></p>
+  <br>
+</div>
+
+## 🚀 Installation Process
+
+### 1. Prepare Rescue Mode
+
+1. Access the Hetzner Robot Manager for your server
+2. Navigate to the **Rescue** tab and configure:
+   - Operating system: **Linux**
+   - Architecture: **64 bit**
+   - Public key: *optional*
+3. Click **Activate rescue system**
+4. Go to the **Reset** tab
+5. Check: **Execute an automatic hardware reset**
+6. Click **Send**
+7. Wait a few minutes for the server to boot into rescue mode
+8. Connect via SSH to the rescue system
+
+### 2. Run Installation Script
+
+Execute this single command in the rescue system terminal:
+
 ```bash
 bash <(curl -sSL https://github.com/ariadata/proxmox-hetzner/raw/main/scripts/pve-install.sh)
 ```
 
+The script will:
+- Download the latest Proxmox VE ISO
+- Create an auto-installation configuration
+- Install Proxmox VE with RAID-1 ZFS configuration
+- Configure networking for both IPv4 and IPv6
+- Set up proper hostname and FQDN
+- Apply recommended system settings
 
-## 3- Run some optional post install commands
-* Just run this command in rescue bash! (optional)
-```shell
-# In pve bash :
+### 3. Optional Post-Installation Optimizations
+
+Run these commands in your Proxmox environment for additional optimizations:
+
+```bash
+# Update system packages
 apt update && apt -y upgrade && apt -y autoremove && pveupgrade && pveam update
 
+# Install useful utilities
 apt install -y curl libguestfs-tools unzip iptables-persistent net-tools
 
+# Remove subscription notice
 sed -Ezi.bak "s/(Ext.Msg.show\(\{\s+title: gettext\('No valid sub)/void\(\{ \/\/\1/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js && systemctl restart pveproxy.service
-
 ```
 
-* Limit ZFS Memory Usage According to [This Link](https://pve.proxmox.com/wiki/ZFS_on_Linux#sysadmin_zfs_limit_memory_usage) :
+#### Optimize ZFS Memory Usage
+
 ```bash
-# In pve bash :
+# Configure ZFS memory limits
 echo "nf_conntrack" >> /etc/modules
 echo "net.netfilter.nf_conntrack_max=1048576" >> /etc/sysctl.d/99-proxmox.conf
 echo "net.netfilter.nf_conntrack_tcp_timeout_established=28800" >> /etc/sysctl.d/99-proxmox.conf
@@ -60,32 +94,34 @@ echo "options zfs zfs_arc_max=$[12 * 1024*1024*1024]" >> /etc/modprobe.d/99-zfs.
 update-initramfs -u
 ```
 
-## 4- Your server is ready to use
-* Login to `Web GUI` on port `8006` with `root` user and password that you entered during install promxox.
-    > https://Your-Server-IP:8006
+## ✅ Accessing Your Proxmox Server
 
-* Your could use `notes.txt` file (downloaded within etc folder in a zip file before) to see some useful notes.
+After installation completes:
 
+1. Access the Proxmox Web GUI: `https://YOUR-SERVER-IP:8006`
+2. Login with:
+   - Username: `root`
+   - Password: *the password you set during installation*
 
+> You can also refer to the `notes.txt` file (downloaded during installation) for additional useful information.
 
-## Useful links
-[ReadMe-v1.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README-v1.md)
+## 📚 Additional Resources
 
-[ReadMe-v2.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README-v2.md)
+### Project Documentation
+- [ReadMe-v1.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README-v1.md)
+- [ReadMe-v2.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README-v2.md)
 
-### Other Links :
-```
-https://tteck.github.io/Proxmox/
-https://github.com/extremeshok/xshok-proxmox
-https://github.com/extremeshok/xshok-proxmox/tree/master/hetzner
-https://88plug.com/linux/what-to-do-after-you-install-proxmox/
-https://gist.github.com/gushmazuko/9208438b7be6ac4e6476529385047bbb
-https://github.com/johnknott/proxmox-hetzner-autoconfigure
-https://github.com/CasCas2/proxmox-hetzner
-https://github.com/west17m/hetzner-proxmox
-https://github.com/SOlangsam/hetzner-proxmox-nat
-https://github.com/HoleInTheSeat/ProxmoxStater
-https://github.com/rloyaute/proxmox-iptables-hetzner
-https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/
-https://www.virtualizationhowto.com/2022/10/proxmox-firewall-rules-configuration/
-```
+### Related Resources
+- [tteck's Proxmox Helper Scripts](https://tteck.github.io/Proxmox/)
+- [extremeshok's Proxmox Tools](https://github.com/extremeshok/xshok-proxmox)
+- [Hetzner-specific Proxmox Tools](https://github.com/extremeshok/xshok-proxmox/tree/master/hetzner)
+- [Proxmox Post-Installation Guide](https://88plug.com/linux/what-to-do-after-you-install-proxmox/)
+- [Proxmox Subscription Notice Removal](https://gist.github.com/gushmazuko/9208438b7be6ac4e6476529385047bbb)
+- [Proxmox Hetzner Autoconfiguration](https://github.com/johnknott/proxmox-hetzner-autoconfigure)
+- [Alternative Proxmox Hetzner Setup](https://github.com/CasCas2/proxmox-hetzner)
+- [Hetzner Proxmox Configuration](https://github.com/west17m/hetzner-proxmox)
+- [Hetzner Proxmox NAT Setup](https://github.com/SOlangsam/hetzner-proxmox-nat)
+- [Proxmox Starter Guide](https://github.com/HoleInTheSeat/ProxmoxStater)
+- [Proxmox IPTables for Hetzner](https://github.com/rloyaute/proxmox-iptables-hetzner)
+- [Firewalld on Debian Guide](https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/)
+- [Proxmox Firewall Configuration Guide](https://www.virtualizationhowto.com/2022/10/proxmox-firewall-rules-configuration/)
