@@ -19,19 +19,42 @@ fi
 
 echo -e "${CLR_GREEN}Starting Proxmox auto-installation...${CLR_RESET}"
 
-# Function to get system information
-get_system_info() {
-    INTERFACE_NAME=$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)
+# Function to get user input
+get_system_inputs() {
+    # Get default interface name and available alternative names first
+    DEFAULT_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
+    if [ -z "$DEFAULT_INTERFACE" ]; then
+        DEFAULT_INTERFACE=$(udevadm info -e | grep -m1 -A 20 ^P.*eth0 | grep ID_NET_NAME_PATH | cut -d'=' -f2)
+    fi
+    
+    # Get all available interfaces and their altnames
+    AVAILABLE_ALTNAMES=$(ip -d link show | grep -v "lo:" | grep -E '(^[0-9]+:|altname)' | awk '/^[0-9]+:/ {interface=$2; gsub(/:/, "", interface); printf "%s", interface} /altname/ {printf ", %s", $2} END {print ""}' | sed 's/, $//')
+    
+    # Set INTERFACE_NAME to default if not already set
+    if [ -z "$INTERFACE_NAME" ]; then
+        INTERFACE_NAME="$DEFAULT_INTERFACE"
+    fi
+    
+    # Prompt user for interface name
+    read -e -p "Interface name (options are: ${AVAILABLE_ALTNAMES}) : " -i "$INTERFACE_NAME" INTERFACE_NAME
+    
+    # Now get network information based on the selected interface
     MAIN_IPV4_CIDR=$(ip address show "$INTERFACE_NAME" | grep global | grep "inet " | xargs | cut -d" " -f2)
     MAIN_IPV4=$(echo "$MAIN_IPV4_CIDR" | cut -d'/' -f1)
     MAIN_IPV4_GW=$(ip route | grep default | xargs | cut -d" " -f3)
     MAC_ADDRESS=$(ip link show "$INTERFACE_NAME" | awk '/ether/ {print $2}')
     IPV6_CIDR=$(ip address show "$INTERFACE_NAME" | grep global | grep "inet6 " | xargs | cut -d" " -f2)
     MAIN_IPV6=$(echo "$IPV6_CIDR" | cut -d'/' -f1)
-
-    FIRST_IPV6_CIDR="$(echo "$IPV6_CIDR" | cut -d'/' -f1 | cut -d':' -f1-4):1::1/80"
-
-    echo -e "${CLR_YELLOW}Detected System Information:${CLR_RESET}"
+    
+    # Set a default value for FIRST_IPV6_CIDR even if IPV6_CIDR is empty
+    if [ -n "$IPV6_CIDR" ]; then
+        FIRST_IPV6_CIDR="$(echo "$IPV6_CIDR" | cut -d'/' -f1 | cut -d':' -f1-4):1::1/80"
+    else
+        FIRST_IPV6_CIDR=""
+    fi
+    
+    # Display detected information
+    echo -e "${CLR_YELLOW}Detected Network Information:${CLR_RESET}"
     echo "Interface Name: $INTERFACE_NAME"
     echo "Main IPv4 CIDR: $MAIN_IPV4_CIDR"
     echo "Main IPv4: $MAIN_IPV4"
@@ -39,11 +62,8 @@ get_system_info() {
     echo "MAC Address: $MAC_ADDRESS"
     echo "IPv6 CIDR: $IPV6_CIDR"
     echo "IPv6: $MAIN_IPV6"
-    echo "First IPv6: $FIRST_IPV6_CIDR"
-}
-
-# Function to get user input
-get_user_input() {
+    
+    # Get user input for other configuration
     read -e -p "Enter your hostname : " -i "proxmox-example" HOSTNAME
     read -e -p "Enter your FQDN name : " -i "proxmox.example.com" FQDN
     read -e -p "Enter your timezone : " -i "Europe/Istanbul" TIMEZONE
@@ -153,17 +173,14 @@ install_proxmox() {
     fi
     echo -e "${CLR_YELLOW}Installing Proxmox VE${CLR_RESET}"
 	echo -e "${CLR_YELLOW}=================================${CLR_RESET}"
-    echo -e "${CLR_RED}Do not do anything, just wait about 2-5 min!${CLR_RED}"
+    echo -e "${CLR_RED}Do NOT do anything, just wait about 5-10 min!${CLR_RED}"
 	echo -e "${CLR_YELLOW}=================================${CLR_RESET}"
-    #UEFI_OPTS=""
-
-    printf "change vnc password\n%s\n" "abcd_123456" | qemu-system-x86_64 \
+    qemu-system-x86_64 \
         -enable-kvm $UEFI_OPTS \
         -cpu host -smp 4 -m 4096 \
         -boot d -cdrom ./pve-autoinstall.iso \
         -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio \
-        -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio \
-        -vnc :0,password=on -monitor stdio -no-reboot
+        -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -no-reboot -display none > /dev/null 2>&1
 }
 
 # Function to boot the installed Proxmox via QEMU with port forwarding
@@ -286,9 +303,7 @@ reboot_to_main_os() {
 
 
 # Main execution flow
-# Main execution flow
-get_system_info
-get_user_input
+get_system_inputs
 prepare_packages
 download_proxmox_iso
 make_answer_toml
