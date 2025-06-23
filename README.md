@@ -125,3 +125,7 @@ After installation completes:
 - [Proxmox IPTables for Hetzner](https://github.com/rloyaute/proxmox-iptables-hetzner)
 - [Firewalld on Debian Guide](https://computingforgeeks.com/how-to-install-and-configure-firewalld-on-debian/)
 - [Proxmox Firewall Configuration Guide](https://www.virtualizationhowto.com/2022/10/proxmox-firewall-rules-configuration/)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
