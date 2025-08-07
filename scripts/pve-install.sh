@@ -36,7 +36,7 @@ get_system_inputs() {
     fi
     
     # Prompt user for interface name
-    read -e -p "Interface name (options are: ${AVAILABLE_ALTNAMES}) : " -i "$INTERFACE_NAME" INTERFACE_NAME
+    read -e -p "Interface name (options are: ${AVAILABLE_ALTNAMES}) : " -i "eno1" INTERFACE_NAME
     
     # Now get network information based on the selected interface
     MAIN_IPV4_CIDR=$(ip address show "$INTERFACE_NAME" | grep global | grep "inet " | xargs | cut -d" " -f2)
