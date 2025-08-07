@@ -27,7 +27,7 @@ iface vmbr0 inet static
     bridge-fd 1
     bridge-vlan-aware yes
     bridge-vids 2-4094
-    hwaddress {{MAC_ADDRESS}}
+#     hwaddress {{MAC_ADDRESS}}
     pointopoint {{MAIN_IPV4_GW}}
     up sysctl -p
 
