@@ -55,7 +55,7 @@ This project provides an automated solution for installing Proxmox VE on Hetzner
 Execute this single command in the rescue system terminal:
 
 ```bash
-bash <(curl -sSL https://github.com/ariadata/proxmox-hetzner/raw/main/scripts/pve-install.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/ariadata/proxmox-hetzner/refs/heads/main/scripts/pve-install.sh)
 ```
 
 The script will:
@@ -127,5 +127,6 @@ After installation completes:
 - [Proxmox Firewall Configuration Guide](https://www.virtualizationhowto.com/2022/10/proxmox-firewall-rules-configuration/)
 
 ## License
+
 
 This project is licensed under the [MIT License](LICENSE).
