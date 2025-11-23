@@ -2,11 +2,11 @@
 - iso mode with UEFI
 - 2 x NVMe SSD Drives
 
-<img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
+<img src="https://github.com/payk24/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/payk24/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
 
-![](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
-![](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
-![](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
+![](https://img.shields.io/github/stars/payk24/proxmox-hetzner.svg)
+![](https://img.shields.io/github/watchers/payk24/proxmox-hetzner.svg)
+![](https://img.shields.io/github/forks/payk24/proxmox-hetzner.svg)
 ---
 ### Assume that our servers info is :
 * My Interface name : `enp7s0`
@@ -98,7 +98,7 @@ qemu-system-x86_64 -enable-kvm -cpu host -device e1000,netdev=net0 -netdev user,
 * for `Main vmbr0` you can use automatic creation with this command :
 ```sh
 ## run this in rescue session
-bash <(curl -sSL https://github.com/ariadata/proxmox-hetzner/raw/main/files/update_main_vmbr0_basic_from_template.sh)
+bash <(curl -sSL https://github.com/payk24/proxmox-hetzner/raw/main/files/update_main_vmbr0_basic_from_template.sh)
 ```
 Or Continue with manual way : 
 
@@ -262,9 +262,9 @@ reboot
 **https://IP_ADDRESS:8006/**
 
 #### Do other configs like this : 
-> MASQUERADE and NAT rules, by using samples [example](https://github.com/ariadata/proxmox-hetzner/raw/main/files/iptables-sample) | 
-[rules.v4](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v4) |
-[rules.v6](https://github.com/ariadata/proxmox-hetzner/blob/main/files/rules.v6)
+> MASQUERADE and NAT rules, by using samples [example](https://github.com/payk24/proxmox-hetzner/raw/main/files/iptables-sample) | 
+[rules.v4](https://github.com/payk24/proxmox-hetzner/blob/main/files/rules.v4) |
+[rules.v6](https://github.com/payk24/proxmox-hetzner/blob/main/files/rules.v6)
 ```bash
 iptables -t nat -A PREROUTING -d 1234/32 -p tcp --dport 10001 -j DNAT --to 192.168.20.100:22
 iptables -t nat -A PREROUTING -d 1.2.3.4/32 -p tcp -m multiport --dports 80,443,8181 -j DNAT --to-destination 192.168.1.2

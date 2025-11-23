@@ -1,11 +1,11 @@
 ## Install Proxmox on hetzner dedicated servers without console
 >Tested on Series [AX](https://www.hetzner.com/dedicated-rootserver/matrix-ax) , [EX](https://www.hetzner.com/dedicated-rootserver/matrix-ex) , [SX](https://www.hetzner.com/dedicated-rootserver/matrix-sx)
 
-<img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/ariadata/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
+<img src="https://github.com/payk24/proxmox-hetzner/raw/main/files/icons/proxmox.png" alt="Proxmox" height="48" /> <img src="https://github.com/payk24/proxmox-hetzner/raw/main/files/icons/hetzner.png" alt="Hetzner" height="38" /> 
 
-![](https://img.shields.io/github/stars/ariadata/proxmox-hetzner.svg)
-![](https://img.shields.io/github/watchers/ariadata/proxmox-hetzner.svg)
-![](https://img.shields.io/github/forks/ariadata/proxmox-hetzner.svg)
+![](https://img.shields.io/github/stars/payk24/proxmox-hetzner.svg)
+![](https://img.shields.io/github/watchers/payk24/proxmox-hetzner.svg)
+![](https://img.shields.io/github/forks/payk24/proxmox-hetzner.svg)
 ---
 ## Steps :
 * [Prepare and Boot into rescue mode](#prepare-and-boot-into-rescue-mode)
@@ -157,7 +157,7 @@ reboot
 
 
 ## Useful links
-[ReadMe-v1.md](https://github.com/ariadata/proxmox-hetzner/blob/main/README.md)
+[ReadMe-v1.md](https://github.com/payk24/proxmox-hetzner/blob/main/README.md)
 
 Other Useful Links :
 ```

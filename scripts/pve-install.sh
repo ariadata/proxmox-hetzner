@@ -236,11 +236,11 @@ make_template_files() {
     echo -e "${CLR_YELLOW}Downloading template files...${CLR_RESET}"
     mkdir -p ./template_files
 
-    wget -O ./template_files/99-proxmox.conf https://github.com/ariadata/proxmox-hetzner/raw/refs/heads/main/files/template_files/99-proxmox.conf
-    wget -O ./template_files/hosts https://github.com/ariadata/proxmox-hetzner/raw/refs/heads/main/files/template_files/hosts
-    wget -O ./template_files/interfaces https://github.com/ariadata/proxmox-hetzner/raw/refs/heads/main/files/template_files/interfaces
-    wget -O ./template_files/debian.sources https://github.com/ariadata/proxmox-hetzner/raw/refs/heads/main/files/template_files/debian.sources
-    wget -O ./template_files/proxmox.sources https://github.com/ariadata/proxmox-hetzner/raw/refs/heads/main/files/template_files/proxmox.sources
+    wget -O ./template_files/99-proxmox.conf https://github.com/payk24/proxmox-hetzner/raw/refs/heads/main/files/template_files/99-proxmox.conf
+    wget -O ./template_files/hosts https://github.com/payk24/proxmox-hetzner/raw/refs/heads/main/files/template_files/hosts
+    wget -O ./template_files/interfaces https://github.com/payk24/proxmox-hetzner/raw/refs/heads/main/files/template_files/interfaces
+    wget -O ./template_files/debian.sources https://github.com/payk24/proxmox-hetzner/raw/refs/heads/main/files/template_files/debian.sources
+    wget -O ./template_files/proxmox.sources https://github.com/payk24/proxmox-hetzner/raw/refs/heads/main/files/template_files/proxmox.sources
 
     # Process hosts file
     echo -e "${CLR_YELLOW}Processing hosts file...${CLR_RESET}"
