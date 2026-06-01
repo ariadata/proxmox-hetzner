@@ -70,7 +70,12 @@ get_system_inputs() {
     read -e -p "Enter your email address: " -i "admin@example.com" EMAIL
     read -e -p "Enter your private subnet : " -i "192.168.26.0/24" PRIVATE_SUBNET
     read -e -p "Enter your System New root password: " NEW_ROOT_PASSWORD
-    
+    read -e -p "Enter your Country: " -i "it" COUNTRY
+    read -e -p "Enter your Keyboard layout: " -i "it" KEYBOARD
+    read -e -p "Enter the name of first disk: " -i "nvme0n1" FIRST_DISK
+    read -e -p "Enter the name of second disk: " -i "nvme1n1" SECOND_DISK
+    read -e -p "Enable nomodeset kernel parameter? Required for some server auction (y/n): " -i "n" ENABLE_NOMODESET
+    read -e -p "Apply ZFS optimizations (ARC limits + nf_conntrack)? (y/n): " -i "n" ENABLE_ZFS_OPT
     # Get the network prefix (first three octets) from PRIVATE_SUBNET
     PRIVATE_CIDR=$(echo "$PRIVATE_SUBNET" | cut -d'/' -f1 | rev | cut -d'.' -f2- | rev)
     # Append .1 to get the first IP in the subnet
@@ -135,8 +140,8 @@ make_answer_toml() {
     echo -e "${CLR_BLUE}Making answer.toml...${CLR_RESET}"
     cat <<EOF > answer.toml
 [global]
-    keyboard = "en-us"
-    country = "us"
+    keyboard = "$KEYBOARD"
+    country = "$COUNTRY"
     fqdn = "$FQDN"
     mailto = "$EMAIL"
     timezone = "$TIMEZONE"
@@ -184,8 +189,8 @@ install_proxmox() {
         -enable-kvm $UEFI_OPTS \
         -cpu host -smp 4 -m 4096 \
         -boot d -cdrom ./pve-autoinstall.iso \
-        -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio \
-        -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -no-reboot -display none > /dev/null 2>&1
+        -drive file=/dev/$FIRST_DISK,format=raw,media=disk,if=virtio \
+        -drive file=/dev/$SECOND_DISK,format=raw,media=disk,if=virtio -no-reboot -display none > /dev/null 2>&1
 }
 
 # Function to boot the installed Proxmox via QEMU with port forwarding
@@ -205,8 +210,8 @@ boot_proxmox_with_port_forwarding() {
         -cpu host -device e1000,netdev=net0 \
         -netdev user,id=net0,hostfwd=tcp::5555-:22 \
         -smp 4 -m 4096 \
-        -drive file=/dev/nvme0n1,format=raw,media=disk,if=virtio \
-        -drive file=/dev/nvme1n1,format=raw,media=disk,if=virtio -display none \
+        -drive file=/dev/$FIRST_DISK,format=raw,media=disk,if=virtio \
+        -drive file=/dev/$SECOND_DISK,format=raw,media=disk,if=virtio -display none \
         > qemu_output.log 2>&1 &
     
     QEMU_PID=$!
@@ -263,6 +268,29 @@ make_template_files() {
     echo -e "${CLR_GREEN}Template files modified successfully.${CLR_RESET}"
 }
 
+# Function to apply nomodeset kernel parameter via SSH
+apply_nomodeset_via_ssh() {
+    echo -e "${CLR_YELLOW}Applying nomodeset kernel parameter...${CLR_RESET}"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@localhost \
+        "grep -q 'nomodeset' /etc/kernel/cmdline || sed -i 's/$/ nomodeset/' /etc/kernel/cmdline && (proxmox-boot-tool refresh || pve-efiboot-tool refresh)"
+    echo -e "${CLR_GREEN}nomodeset applied successfully.${CLR_RESET}"
+}
+
+# Function to apply ZFS optimizations via SSH
+apply_zfs_optimizations_via_ssh() {
+    echo -e "${CLR_YELLOW}Applying ZFS optimizations...${CLR_RESET}"
+    local zfs_arc_min=$(( 6 * 1024 * 1024 * 1024 ))
+    local zfs_arc_max=$(( 12 * 1024 * 1024 * 1024 ))
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@localhost \
+        "echo 'nf_conntrack' >> /etc/modules && \
+         echo 'net.netfilter.nf_conntrack_max=1048576' >> /etc/sysctl.d/99-proxmox.conf && \
+         echo 'net.netfilter.nf_conntrack_tcp_timeout_established=28800' >> /etc/sysctl.d/99-proxmox.conf && \
+         rm -f /etc/modprobe.d/zfs.conf && \
+         echo 'options zfs zfs_arc_min=${zfs_arc_min}' >> /etc/modprobe.d/99-zfs.conf && \
+         echo 'options zfs zfs_arc_max=${zfs_arc_max}' >> /etc/modprobe.d/99-zfs.conf && \
+         update-initramfs -u"
+    echo -e "${CLR_GREEN}ZFS optimizations applied successfully.${CLR_RESET}"
+}
 # Function to configure the installed Proxmox via SSH
 configure_proxmox_via_ssh() {
     echo -e "${CLR_BLUE}Starting post-installation configuration via SSH...${CLR_RESET}"
