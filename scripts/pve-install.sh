@@ -28,7 +28,7 @@ get_system_inputs() {
     fi
     
     # Get all available interfaces and their altnames
-    AVAILABLE_ALTNAMES=$(ip -d link show | grep -v "lo:" | grep -E '(^[0-9]+:|altname)' | awk '/^[0-9]+:/ {interface=$2; gsub(/:/, "", interface); printf "%s", interface} /altname/ {printf ", %s", $2} END {print ""}' | sed 's/, $//')
+    AVAILABLE_ALTNAMES=$(ip -d link show | awk '/^[0-9]+: lo:/ {skip=1; next} /^[0-9]+:/ {if (interface != "" && !skip) {if (out != "") out = out ", "; out = out interface "->" altname} interface=$2; gsub(/:/, "", interface); altname=""; skip=0} /altname/ && !skip {altname=$2} END {if (interface != "" && !skip) {if (out != "") out = out ", "; out = out interface "->" altname} print out}')
     
     # Set INTERFACE_NAME to default if not already set
     if [ -z "$INTERFACE_NAME" ]; then
