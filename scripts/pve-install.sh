@@ -70,8 +70,8 @@ get_system_inputs() {
     read -e -p "Enter your email address: " -i "admin@example.com" EMAIL
     read -e -p "Enter your private subnet : " -i "192.168.26.0/24" PRIVATE_SUBNET
     read -e -p "Enter your System New root password: " NEW_ROOT_PASSWORD
-    read -e -p "Enter your Country: " -i "it" COUNTRY
-    read -e -p "Enter your Keyboard layout: " -i "it" KEYBOARD
+    read -e -p "Enter your Country: " -i "en" COUNTRY
+    read -e -p "Enter your Keyboard layout: " -i "en-us" KEYBOARD
     read -e -p "Enter the name of first disk: " -i "nvme0n1" FIRST_DISK
     read -e -p "Enter the name of second disk: " -i "nvme1n1" SECOND_DISK
     read -e -p "Enable nomodeset kernel parameter? Required for some server auction (y/n): " -i "n" ENABLE_NOMODESET
