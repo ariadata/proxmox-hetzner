@@ -269,7 +269,6 @@ configure_proxmox_via_ssh() {
     make_template_files
 
     SSH_OPTS="-p 5555 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o LogLevel=ERROR"
-    SCP_OPTS="-P 5555 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o LogLevel=ERROR"
 
     # Wait until SSH accepts a login (port open != sshd ready)
     echo -e "${CLR_YELLOW}Waiting until SSH accepts login...${CLR_RESET}"
@@ -286,20 +285,28 @@ configure_proxmox_via_ssh() {
         fi
     done
 
-    # copy template files to the server using scp
-    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/hosts root@localhost:/etc/hosts
-    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/interfaces root@localhost:/etc/network/interfaces
-    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/99-proxmox.conf root@localhost:/etc/sysctl.d/99-proxmox.conf
-    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/debian.sources root@localhost:/etc/apt/sources.list.d/debian.sources
-    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/proxmox.sources root@localhost:/etc/apt/sources.list.d/proxmox.sources
+    # copy template files (ssh+cat is more reliable than scp over qemu user-net)
+    echo -e "${CLR_YELLOW}Copying template files via SSH...${CLR_RESET}"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'cat > /etc/hosts' < template_files/hosts
+    echo -e "${CLR_GREEN}  /etc/hosts${CLR_RESET}"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'cat > /etc/network/interfaces' < template_files/interfaces
+    echo -e "${CLR_GREEN}  /etc/network/interfaces${CLR_RESET}"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'cat > /etc/sysctl.d/99-proxmox.conf' < template_files/99-proxmox.conf
+    echo -e "${CLR_GREEN}  /etc/sysctl.d/99-proxmox.conf${CLR_RESET}"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'cat > /etc/apt/sources.list.d/debian.sources' < template_files/debian.sources
+    echo -e "${CLR_GREEN}  /etc/apt/sources.list.d/debian.sources${CLR_RESET}"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'cat > /etc/apt/sources.list.d/proxmox.sources' < template_files/proxmox.sources
+    echo -e "${CLR_GREEN}  /etc/apt/sources.list.d/proxmox.sources${CLR_RESET}"
 
+    echo -e "${CLR_YELLOW}Applying post-install tweaks...${CLR_RESET}"
     # comment out the line in the sources.list file
     #sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "sed -i 's/^\([^#].*\)/# \1/g' /etc/apt/sources.list.d/pve-enterprise.list"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "[ -f /etc/apt/sources.list ] && mv /etc/apt/sources.list /etc/apt/sources.list.bak"
+    # Use if/fi so missing sources.list does not trip set -e (exit 1 from `[ -f ] && …`)
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'if [ -f /etc/apt/sources.list ]; then mv /etc/apt/sources.list /etc/apt/sources.list.bak; fi'
     #sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "echo -e 'nameserver 8.8.8.8\nnameserver 1.1.1.1\nnameserver 4.2.2.4\nnameserver 9.9.9.9' | tee /etc/resolv.conf"
     sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "echo -e 'nameserver 185.12.64.1\nnameserver 185.12.64.2\nnameserver 1.1.1.1\nnameserver 8.8.4.4' | tee /etc/resolv.conf"
     sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "echo $HOSTNAME > /etc/hostname"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "systemctl disable --now rpcbind rpcbind.socket"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "systemctl disable --now rpcbind rpcbind.socket" || true
     # Power off the VM
     echo -e "${CLR_YELLOW}Powering off the VM...${CLR_RESET}"
     sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'poweroff' || true
