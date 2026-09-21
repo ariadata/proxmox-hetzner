@@ -267,25 +267,43 @@ make_template_files() {
 configure_proxmox_via_ssh() {
     echo -e "${CLR_BLUE}Starting post-installation configuration via SSH...${CLR_RESET}"
     make_template_files
-	ssh-keygen -f "/root/.ssh/known_hosts" -R "[localhost]:5555" || true
+
+    SSH_OPTS="-p 5555 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o LogLevel=ERROR"
+    SCP_OPTS="-P 5555 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o LogLevel=ERROR"
+
+    # Wait until SSH accepts a login (port open != sshd ready)
+    echo -e "${CLR_YELLOW}Waiting until SSH accepts login...${CLR_RESET}"
+    for i in {1..60}; do
+        if sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'true' 2>/dev/null; then
+            echo -e "${CLR_GREEN}SSH login OK.${CLR_RESET}"
+            break
+        fi
+        echo -n "."
+        sleep 5
+        if [ "$i" -eq 60 ]; then
+            echo -e "${CLR_RED}SSH login failed after waiting.${CLR_RESET}"
+            return 1
+        fi
+    done
+
     # copy template files to the server using scp
-    sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/hosts root@localhost:/etc/hosts
-    sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/interfaces root@localhost:/etc/network/interfaces
-    sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/99-proxmox.conf root@localhost:/etc/sysctl.d/99-proxmox.conf
-    sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/debian.sources root@localhost:/etc/apt/sources.list.d/debian.sources
-    sshpass -p "$NEW_ROOT_PASSWORD" scp -P 5555 -o StrictHostKeyChecking=no template_files/proxmox.sources root@localhost:/etc/apt/sources.list.d/proxmox.sources
-	
+    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/hosts root@localhost:/etc/hosts
+    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/interfaces root@localhost:/etc/network/interfaces
+    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/99-proxmox.conf root@localhost:/etc/sysctl.d/99-proxmox.conf
+    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/debian.sources root@localhost:/etc/apt/sources.list.d/debian.sources
+    sshpass -p "$NEW_ROOT_PASSWORD" scp $SCP_OPTS template_files/proxmox.sources root@localhost:/etc/apt/sources.list.d/proxmox.sources
+
     # comment out the line in the sources.list file
-    #sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost "sed -i 's/^\([^#].*\)/# \1/g' /etc/apt/sources.list.d/pve-enterprise.list"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost "[ -f /etc/apt/sources.list ] && mv /etc/apt/sources.list /etc/apt/sources.list.bak"
-    #sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost "echo -e 'nameserver 8.8.8.8\nnameserver 1.1.1.1\nnameserver 4.2.2.4\nnameserver 9.9.9.9' | tee /etc/resolv.conf"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost "echo -e 'nameserver 185.12.64.1\nnameserver 185.12.64.2\nnameserver 1.1.1.1\nnameserver 8.8.4.4' | tee /etc/resolv.conf"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost "echo $HOSTNAME > /etc/hostname"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost "systemctl disable --now rpcbind rpcbind.socket"
+    #sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "sed -i 's/^\([^#].*\)/# \1/g' /etc/apt/sources.list.d/pve-enterprise.list"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "[ -f /etc/apt/sources.list ] && mv /etc/apt/sources.list /etc/apt/sources.list.bak"
+    #sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "echo -e 'nameserver 8.8.8.8\nnameserver 1.1.1.1\nnameserver 4.2.2.4\nnameserver 9.9.9.9' | tee /etc/resolv.conf"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "echo -e 'nameserver 185.12.64.1\nnameserver 185.12.64.2\nnameserver 1.1.1.1\nnameserver 8.8.4.4' | tee /etc/resolv.conf"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "echo $HOSTNAME > /etc/hostname"
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost "systemctl disable --now rpcbind rpcbind.socket"
     # Power off the VM
     echo -e "${CLR_YELLOW}Powering off the VM...${CLR_RESET}"
-    sshpass -p "$NEW_ROOT_PASSWORD" ssh -p 5555 -o StrictHostKeyChecking=no root@localhost 'poweroff' || true
-    
+    sshpass -p "$NEW_ROOT_PASSWORD" ssh $SSH_OPTS root@localhost 'poweroff' || true
+
     # Wait for QEMU to exit
     echo -e "${CLR_YELLOW}Waiting for QEMU process to exit...${CLR_RESET}"
     wait $QEMU_PID || true
